@@ -3,6 +3,7 @@ package org.example.mutant_detector.service;
 import lombok.RequiredArgsConstructor;
 import org.example.mutant_detector.dto.StatsResponse;
 import org.example.mutant_detector.entity.DnaRecord;
+import org.example.mutant_detector.exception.DnaHashCalculationException;
 import org.example.mutant_detector.repository.DnaRecordRepository;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +68,7 @@ public class MutantService {
             }
             return hexString.toString();
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error al calcular hash SHA-256", e);
+            throw new DnaHashCalculationException("Error al calcular el hash del ADN", e);
         }
     }
 }
