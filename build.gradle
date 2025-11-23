@@ -42,9 +42,9 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
-    dependsOn test // El reporte depende de que corran los tests primero
+    dependsOn test
     reports {
-        xml.required = true // Necesario para herramientas de CI/CD (opcional pero bueno tenerlo)
-        html.required = true // El reporte visual que vas a abrir en el navegador
+        xml.required = true
+        html.required = true
     }
 }
