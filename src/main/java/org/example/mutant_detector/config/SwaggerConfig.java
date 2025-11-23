@@ -15,7 +15,11 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
-                .servers(List.of(new Server().url("/").description("Default Server URL")))
+
+                .servers(List.of(
+                        new Server().url("https://mutant-detector-api-1q1n.onrender.com").description("Servidor de Producción (Render)"),
+                        new Server().url("http://localhost:8080").description("Servidor Local")
+                ))
                 .info(new Info()
                         .title("Mutant Detector API")
                         .version("1.0")
