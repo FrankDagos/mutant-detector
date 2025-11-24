@@ -10,7 +10,10 @@ Boot](https://img.shields.io/badge/Spring%20Boot-3.4-green?style=flat-square)
 ![Deploy](https://img.shields.io/badge/Deploy-Render-blue?style=flat-square)
 
 API REST desarrollada para detectar mutantes basándose en su secuencia
-de ADN. Proyecto realizado para el examen técnico de MercadoLibre.
+de ADN. Proyecto realizado para materia Desarrollo de Software de la UTN Facultad Regional Mendoza.
+
+👉 **Repositorio en Github URL:**\
+https://github.com/FrankDagos/mutant-detector
 
 ------------------------------------------------------------------------
 
