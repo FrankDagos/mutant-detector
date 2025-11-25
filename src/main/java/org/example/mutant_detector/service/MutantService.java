@@ -6,6 +6,7 @@ import org.example.mutant_detector.entity.DnaRecord;
 import org.example.mutant_detector.exception.DnaHashCalculationException;
 import org.example.mutant_detector.repository.DnaRecordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -70,5 +71,15 @@ public class MutantService {
         } catch (NoSuchAlgorithmException e) {
             throw new DnaHashCalculationException("Error al calcular el hash del ADN", e);
         }
+    }
+
+    @Transactional // Importante para operaciones DELETE
+    public boolean deleteMutant(String hash) {
+        Optional<DnaRecord> existing = dnaRecordRepository.findByDnaHash(hash);
+        if (existing.isPresent()) {
+            dnaRecordRepository.deleteByDnaHash(hash);
+            return true; // Borrado exitoso
+        }
+        return false; // No existía
     }
 }

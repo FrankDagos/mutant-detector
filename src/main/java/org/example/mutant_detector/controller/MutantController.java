@@ -51,4 +51,17 @@ public class MutantController {
     public ResponseEntity<StatsResponse> getStats() {
         return ResponseEntity.ok(mutantService.getStats());
     }
+
+    @Operation(summary = "Eliminar registro", description = "Elimina un registro de ADN de la base de datos usando su Hash.")
+    @ApiResponse(responseCode = "200", description = "Registro eliminado")
+    @ApiResponse(responseCode = "404", description = "Registro no encontrado")
+    @DeleteMapping("/mutant/{hash}")
+    public ResponseEntity<Void> deleteMutant(@PathVariable String hash) {
+        boolean deleted = mutantService.deleteMutant(hash);
+        if (deleted) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
