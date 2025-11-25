@@ -10,6 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -42,11 +45,24 @@ public class MutantService {
         return isMutant;
     }
 
-    public StatsResponse getStats() {
-        long countMutant = dnaRecordRepository.countByIsMutant(true);
-        long countHuman = dnaRecordRepository.countByIsMutant(false);
-        double ratio = countHuman == 0 ? 0 : (double) countMutant / countHuman;
+    public StatsResponse getStats(LocalDate startDate, LocalDate endDate) {
+        long countMutant;
+        long countHuman;
 
+        if (startDate != null && endDate != null) {
+            // Si hay fechas, filtramos (Desde el inicio del día start hasta el final del día end)
+            LocalDateTime start = startDate.atStartOfDay();
+            LocalDateTime end = endDate.atTime(LocalTime.MAX);
+
+            countMutant = dnaRecordRepository.countByIsMutantAndCreatedAtBetween(true, start, end);
+            countHuman = dnaRecordRepository.countByIsMutantAndCreatedAtBetween(false, start, end);
+        } else {
+            // Trae todo el histórico
+            countMutant = dnaRecordRepository.countByIsMutant(true);
+            countHuman = dnaRecordRepository.countByIsMutant(false);
+        }
+
+        double ratio = countHuman == 0 ? 0 : (double) countMutant / countHuman;
         return new StatsResponse(countMutant, countHuman, ratio);
     }
 

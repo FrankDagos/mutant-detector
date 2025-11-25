@@ -11,9 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.mutant_detector.dto.DnaRequest;
 import org.example.mutant_detector.dto.StatsResponse;
 import org.example.mutant_detector.service.MutantService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,15 +43,13 @@ public class MutantController {
         }
     }
 
-    @Operation(summary = "Obtener estadísticas", description = "Devuelve el conteo de mutantes, humanos y el ratio de verificaciones.")
-    @ApiResponse(
-            responseCode = "200",
-            description = "Estadísticas obtenidas exitosamente",
-            content = @Content(mediaType = "application/json", schema = @Schema(implementation = StatsResponse.class))
-    )
+    @Operation(summary = "Obtener estadísticas", description = "Devuelve estadísticas. Opcionalmente acepta rango de fechas (YYYY-MM-DD).")
     @GetMapping("/stats")
-    public ResponseEntity<StatsResponse> getStats() {
-        return ResponseEntity.ok(mutantService.getStats());
+    public ResponseEntity<StatsResponse> getStats(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        return ResponseEntity.ok(mutantService.getStats(startDate, endDate));
     }
 
     @Operation(summary = "Eliminar registro", description = "Elimina un registro de ADN de la base de datos usando su Hash.")
