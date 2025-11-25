@@ -30,7 +30,6 @@ class MutantServiceTest {
 
     @Test
     void analyzeDna_ExistingMutant_ReturnsTrueFromCache() {
-        // Simulamos que ya existe en BD y es mutante
         DnaRecord record = new DnaRecord();
         record.setMutant(true);
         when(dnaRecordRepository.findByDnaHash(anyString())).thenReturn(Optional.of(record));
@@ -38,21 +37,18 @@ class MutantServiceTest {
         boolean result = mutantService.analyzeDna(new String[]{"AAAA", "CCCC", "TCAG", "GGTC"});
 
         assertTrue(result);
-        // Verificamos que NO llamó al detector (ahorro de recursos)
         verify(mutantDetector, never()).isMutant(any());
     }
 
     @Test
     void analyzeDna_NewMutant_SavesAndReturnsTrue() {
-        // Simulamos que NO existe en BD
         when(dnaRecordRepository.findByDnaHash(anyString())).thenReturn(Optional.empty());
-        // Simulamos que el detector dice que es mutante
         when(mutantDetector.isMutant(any())).thenReturn(true);
 
         boolean result = mutantService.analyzeDna(new String[]{"AAAA", "CCCC", "TCAG", "GGTC"});
 
         assertTrue(result);
-        verify(dnaRecordRepository).save(any(DnaRecord.class)); // Verificamos que guardó
+        verify(dnaRecordRepository).save(any(DnaRecord.class));
     }
 
     @Test
@@ -71,7 +67,8 @@ class MutantServiceTest {
         when(dnaRecordRepository.countByIsMutant(true)).thenReturn(40L);
         when(dnaRecordRepository.countByIsMutant(false)).thenReturn(100L);
 
-        StatsResponse stats = mutantService.getStats();
+        // CORREGIDO: Pasamos null, null para simular la llamada sin filtros de fecha
+        StatsResponse stats = mutantService.getStats(null, null);
 
         assertEquals(40, stats.getCountMutantDna());
         assertEquals(100, stats.getCountHumanDna());
@@ -80,13 +77,11 @@ class MutantServiceTest {
 
     @Test
     void getStats_NoHumans_ReturnsZeroRatio_Or_MutantCount() {
-        // Caso borde: división por cero
         when(dnaRecordRepository.countByIsMutant(true)).thenReturn(10L);
         when(dnaRecordRepository.countByIsMutant(false)).thenReturn(0L);
 
-        StatsResponse stats = mutantService.getStats();
+        StatsResponse stats = mutantService.getStats(null, null);
 
-        // Según la lógica: countHuman == 0 ? 0 : ...
         assertEquals(0, stats.getRatio());
     }
 }

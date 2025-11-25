@@ -2,9 +2,6 @@ package org.example.mutant_detector.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -21,7 +18,6 @@ class MutantDetectorTest {
 
     @Test
     void testMutantHorizontal() {
-        // Dos secuencias horizontales: AAAA en fila 0, CCCC en fila 2
         String[] dna = {
                 "AAAAAA",
                 "CAGTGC",
@@ -35,7 +31,6 @@ class MutantDetectorTest {
 
     @Test
     void testMutantVertical() {
-        // Dos secuencias verticales: GGGG en col 0, CCCC en col 2
         String[] dna = {
                 "GATCGG",
                 "GCTCGG",
@@ -49,7 +44,6 @@ class MutantDetectorTest {
 
     @Test
     void testMutantDiagonal() {
-        // Diagonal principal (ATGC...) y otra diagonal
         String[] dna = {
                 "ATGCGA",
                 "CAGTGC",
@@ -63,40 +57,19 @@ class MutantDetectorTest {
 
     @Test
     void testMutantCounterDiagonal() {
-        // Diagonales inversas (↗)
         String[] dna = {
-                "ATGCGA", // ...A
-                "CAGTAC", // ..A.
-                "TTAAGT", // .A..
-                "AGAAGG", // A...
-                "CCCCTA",
-                "TCACTG"
-        };
-        // Nota: Este caso requiere una segunda secuencia para ser mutante.
-        // Agreguemos una horizontal clara abajo para asegurar >1 secuencia si el test es estricto
-        String[] dna2 = {
                 "ATGCGA",
                 "CAGTAC",
                 "TTAAGT",
-                "AGAAGG", // Diagonal inversa aquí
-                "TTTTTA", // Horizontal aquí
+                "AGAAGG",
+                "TTTTTA", // Agregada horizontal para asegurar >1 secuencia
                 "TCACTG"
         };
-        assertTrue(mutantDetector.isMutant(dna2), "Debería detectar mutante por diagonal inversa + horizontal");
+        assertTrue(mutantDetector.isMutant(dna), "Debería detectar mutante por diagonal inversa");
     }
 
     @Test
     void testMutantMixed() {
-        // 1 Horizontal + 1 Vertical
-        String[] dna = {
-                "AAAAGA", // Horizontal AAAA
-                "CAGTGC",
-                "TTATGT",
-                "AGACGG",
-                "GCGTCA",
-                "TCACTG"  // Faltaría una vertical... modifiquemos para garantizar:
-        };
-        // Mejor usemos el ejemplo canónico del examen que sabemos es mutante
         String[] dnaMutant = {
                 "ATGCGA",
                 "CAGTGC",
@@ -125,7 +98,7 @@ class MutantDetectorTest {
 
     @Test
     void testHumanOneSequenceOnly() {
-        // Solo tiene AAAA horizontal, nada más.
+        // "AAAAAA" tiene 3 secuencias de 4 superpuestas (0-3, 1-4, 2-5).
         String[] dna = {
                 "AAAAGA",
                 "CAGTGC",
@@ -137,8 +110,7 @@ class MutantDetectorTest {
         assertFalse(mutantDetector.isMutant(dna), "Humano con SOLO UNA secuencia debe ser false");
     }
 
-    // --- CASOS DE VALIDACIÓN Y ERRORES (False o Excepción controlada) ---
-    // Nota: El algoritmo actual retorna false ante inputs inválidos por robustez
+    // --- CASOS DE VALIDACIÓN Y ERRORES ---
 
     @Test
     void testNullDna() {
@@ -151,32 +123,88 @@ class MutantDetectorTest {
     }
 
     @Test
-    void testNxM_NotSquare() {
-        String[] dna = {"ATC", "GCG"}; // 2x3
-        // Como la implementación usa dna.length como N, al acceder a char[N][N] podría fallar si no validamos antes.
-        // El algoritmo base asume NxN. Si la rúbrica pide validación estricta,
-        // debemos asegurar que el código no lance Exception, o lance una controlada.
-        // Nuestra implementación convierte a matriz basándose en N=dna.length.
-        // Agregaremos un test para asegurar que maneja o falla controladamente.
-        // En este caso, simplemente probamos que no explote (o retorne false si agregamos validación extra).
-        // Si tu detector no valida NxN explícitamente, este test podría lanzar IndexOutOfBounds.
-        // *Revisemos tu implementación*: usaste `matrix[i] = dna[i].toCharArray()`.
-        // Si una fila es más corta, lanzará error al acceder.
-        // Para el examen, es mejor retornar false o lanzar excepción custom.
-        // Asumiremos que retorna false si agregamos la validación en el siguiente paso (DTO).
-        // Por ahora en el core, probemos matriz cuadrada pequeña sin secuencias.
-        String[] dnaSquare = {"AT", "CG"};
-        assertFalse(mutantDetector.isMutant(dnaSquare));
-    }
-
-    @Test
     void testSmallMatrix() {
-        // 3x3 no puede tener secuencias de 4
         String[] dna = {
                 "ATG",
                 "CAG",
                 "TTA"
         };
+        assertFalse(mutantDetector.isMutant(dna));
+    }
+
+    @Test
+    void testMutant4x4() {
+        // Caso borde: Matriz mínima (4x4) con secuencias
+        String[] dna = {
+                "AAAA", // Horizontal
+                "CCCC", // Horizontal
+                "TCAG",
+                "GGTC"
+        };
+        assertTrue(mutantDetector.isMutant(dna), "Debe detectar mutante en matriz mínima 4x4");
+    }
+
+    @Test
+    void testHuman4x4() {
+        // Caso borde: Matriz mínima (4x4) humana
+        String[] dna = {
+                "AAAT",
+                "CCCG",
+                "TCAG",
+                "GGTC"
+        };
+        assertFalse(mutantDetector.isMutant(dna), "No debe detectar mutante en matriz mínima 4x4 sin secuencias suficientes");
+    }
+
+    @Test
+    void testMutantCross() {
+        // Cruz de secuencias (comparte una letra central)
+        String[] dna = {
+                "GTATG",
+                "GTATG",
+                "AAAAA", // Horizontal
+                "GTATG",
+                "GTATG"
+        };
+        // Hay horizontal en fila 2 y verticales en col 0, 2, 4... es mutante
+        assertTrue(mutantDetector.isMutant(dna));
+    }
+
+    @Test
+    void testInvalidNumbers() {
+        // Números en vez de letras
+        String[] dna = {
+                "1234",
+                "CAGT",
+                "TTAT",
+                "AGAC"
+        };
+        assertFalse(mutantDetector.isMutant(dna), "Debe rechazar números");
+    }
+
+    @Test
+    void testInvalidLowerCase() {
+        
+        String[] dna = {
+                "acgt",
+                "tgca",
+                "cagt",
+                "gtca"
+        };
+        assertFalse(mutantDetector.isMutant(dna));
+    }
+
+    @Test
+    void testMutantDiagonalReverseShort() {
+
+        String[] dna = {
+                "ATGCA",
+                "CAGTA",
+                "TTGTA",
+                "AGAAG",
+                "CCCCT"
+        };
+
         assertFalse(mutantDetector.isMutant(dna));
     }
 }

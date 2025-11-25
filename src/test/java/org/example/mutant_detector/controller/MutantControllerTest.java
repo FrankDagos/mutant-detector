@@ -1,5 +1,4 @@
-package org.example.mutant_detector.contoller;
-
+package org.example.mutant_detector.controller;
 import org.example.mutant_detector.service.MutantService;
 import org.example.mutant_detector.dto.StatsResponse;
 import org.junit.jupiter.api.Test;
@@ -12,8 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
@@ -65,12 +63,23 @@ class MutantControllerTest {
     @Test
     void testStats_Returns200() throws Exception {
         StatsResponse stats = new StatsResponse(40, 100, 0.4);
-        when(mutantService.getStats()).thenReturn(stats);
+
+        // Usamos any() para que acepte nulos o fechas
+        when(mutantService.getStats(any(), any())).thenReturn(stats);
 
         mockMvc.perform(get("/stats"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count_mutant_dna").value(40))
                 .andExpect(jsonPath("$.count_human_dna").value(100))
                 .andExpect(jsonPath("$.ratio").value(0.4));
+    }
+
+    @Test
+    void testDeleteMutant_Returns200() throws Exception {
+        // Test para el endpoint DELETE del Nivel 2
+        when(mutantService.deleteMutant("some-hash")).thenReturn(true);
+
+        mockMvc.perform(delete("/mutant/some-hash"))
+                .andExpect(status().isOk());
     }
 }
