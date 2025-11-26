@@ -1,16 +1,17 @@
 package org.example.mutant_detector.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "dna_records", indexes = {
-        @Index(name = "idx_dna_hash", columnList = "dna_hash") // Índice para búsquedas rápidas
+        @Index(name = "idx_dna_hash", columnList = "dna_hash")
 })
-@Getter @Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DnaRecord implements Serializable {
 
     @Id

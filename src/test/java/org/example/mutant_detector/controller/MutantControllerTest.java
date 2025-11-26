@@ -82,4 +82,30 @@ class MutantControllerTest {
         mockMvc.perform(delete("/mutant/some-hash"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void testMalformedJson_Returns400() throws Exception {
+        // JSON roto (falta llave de cierre)
+        String json = "{\"dna\":[\"AAAA\",\"CCCC\"]";
+
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testMethodNotAllowed_Returns405() throws Exception {
+        // Intentar hacer GET a /mutant (solo permite POST)
+        mockMvc.perform(get("/mutant"))
+                .andExpect(status().isMethodNotAllowed());
+    }
+
+    @Test
+    void testEmptyBody_Returns400() throws Exception {
+        mockMvc.perform(post("/mutant")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")) // Body vacío sin el campo dna
+                .andExpect(status().isBadRequest()); // Falla validación @Valid
+    }
 }
